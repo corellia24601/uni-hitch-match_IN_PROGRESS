@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light;
   --text: #3d3a45;
   --text-h: #141118;
   --muted: #6b6575;
@@ -34,31 +35,8 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #c8c2d0;
-    --text-h: #f4f0f8;
-    --muted: #9d96a8;
-    --page-bg: #0e2a44;
-    --page-bg-top: #174668;
-    --bg: #0f0d12;
-    --surface: #1a1720;
-    --input-bg: #13111a;
-    --border: #2f2a38;
-    --accent: #6ea8ff;
-    --accent-bg: rgba(110, 168, 255, 0.14);
-    --accent-border: rgba(110, 168, 255, 0.4);
-    --chip-bg: rgba(110, 168, 255, 0.18);
-    --highlight: #ff8a3c;
-    --highlight-bg: rgba(255, 138, 60, 0.14);
-    --highlight-border: rgba(255, 138, 60, 0.45);
-    --success: #34d399;
-    --success-bg: rgba(52, 211, 153, 0.14);
-    --success-text: #a7f3d0;
-    --danger: #f97066;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-  }
-}
+/* Intentionally no prefers-color-scheme override: brand colors stay the same in light and
+   dark OS modes so the ride board always matches the designed blue/orange palette. */
 
 *,
 *::before,
