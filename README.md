@@ -1,73 +1,67 @@
-# React + TypeScript + Vite
+# Uni Hitch Match
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Live site:** [https://uni-hitch-match.win](https://uni-hitch-match.win)
 
-Currently, two official plugins are available:
+Uni Hitch Match is a **non-profit, student-run bulletin board** for long-distance rides between the Champaign–Urbana campus area and Chicagoland (downtown, **ORD**, **MDW**, and nearby). It is **not** affiliated with the University of Illinois or any official transportation service.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The product wedge is the same one described in the [Product Requirement Document](./Product-Requirement-Document.md): combine the flexibility of informal carpooling with **discoverability** and **trust**—here, membership is limited to people who sign up with an `@illinois.edu` school email. The platform **connects** drivers and riders; **you set the price, you make the plan, and you coordinate payment off-platform** (e.g. Venmo, Zelle, cash), consistent with a cost-sharing listing board rather than a ride-hailing app.
 
-## React Compiler
+## What you can do today
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Browse **rides offering** (drivers) and **rides seeking** (passengers) on a shared board with filters (dates, endpoints, seats, luggage, sort).
+- **Post** a ride or request (demo data + local persistence; optional Supabase path exists behind feature flags).
+- **Sign up / log in** with U of I email and phone (UI flow; production verification depends on your backend setup).
+- Express interest with **I’m interested**: a structured form (pickup, price expectations, remarks, contact sharing) that, when deployed with [Resend](https://resend.com), emails the ride owner via a Vercel serverless function.
 
-## Expanding the ESLint configuration
+## Tech stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) + [Vite 8](https://vitejs.dev/)
+- Styling: CSS variables and a single app stylesheet (`src/App.css`)
+- Optional persistence: [Supabase](https://supabase.com/) (`@supabase/supabase-js`), toggled via `src/lib/flags.ts`
+- Email (production): [Resend](https://resend.com) from `api/send-interest.ts` on [Vercel](https://vercel.com/)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Local development
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open the URL Vite prints (typically `http://localhost:5173`).
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Other scripts:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run build    # production build
+npm run preview  # serve dist locally
+npm run test     # unit tests (Vitest)
+npm run lint     # ESLint
 ```
+
+## Deployment
+
+See **[DEPLOY.md](./DEPLOY.md)** for Vercel, custom domain (`uni-hitch-match.win`), Cloudflare DNS, Resend (outbound mail on a `mail.` subdomain), and Zoho Mail (inbound replies).
+
+Environment variables for email are documented in `.env.example`.
+
+## Repository layout (high level)
+
+| Path | Purpose |
+|------|---------|
+| `src/AppShell.tsx` | App chrome, tabs, auth and interest modals |
+| `src/features/rides/` | Ride board, cards, interest modal |
+| `src/features/auth/` | Sign-up / login modal |
+| `src/lib/useAppStore.ts` | Client state, interest submission + optional API call |
+| `api/send-interest.ts` | Vercel function: sends owner notification email via Resend |
+
+## Product direction
+
+Goals, personas, competitive framing, MVP scope, legal checklist, and roadmap live in **[Product Requirement Document](./Product-Requirement-Document.md)**. That file is the source of truth for *why* the product exists; this README describes *what* is in the repo and *how* to run and ship it.
+
+## Disclaimer
+
+This software and [uni-hitch-match.win](https://uni-hitch-match.win) are **independent student/community projects**, not endorsed by UIUC. Rides and payments are **arrangements between users**. Review the PRD’s trust, safety, and legal sections before scaling usage.
+
+## License
+
+This project is private unless you add a `LICENSE` file. Specify terms before open-sourcing.
