@@ -50,7 +50,7 @@ export function AppShell() {
       <span className="topbar__logo" aria-hidden>◎</span>
       <div>
         <p className="eyebrow">UIUC ↔ Chicago</p>
-        <h1>Illini ride board</h1>
+        <h1>Uni Hitch Match</h1>
       </div>
     </div>
   )
