@@ -40,7 +40,7 @@ npm run lint     # ESLint
 
 ## Deployment
 
-See **[DEPLOY.md](./DEPLOY.md)** for Vercel, custom domain (`uni-hitch-match.win`), Cloudflare DNS, Resend (outbound mail on a `mail.` subdomain), and Zoho Mail (inbound replies).
+See **[DEPLOY.md](./DEPLOY.md)** for Vercel, custom domain (`uni-hitch-match.win`), Cloudflare DNS, Resend (outbound on the same apex domain as Zoho, with a merged SPF record), and Zoho Mail (inbound replies).
 
 Environment variables for email are documented in `.env.example`.
 

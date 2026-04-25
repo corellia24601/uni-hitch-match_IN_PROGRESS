@@ -35,7 +35,7 @@ type RequestBody = {
 }
 
 const BRAND = 'Uni Hitch Match'
-const MAIL_FROM = process.env.MAIL_FROM ?? 'notifications@mail.uni-hitch-match.win'
+const MAIL_FROM = process.env.MAIL_FROM ?? 'notifications@uni-hitch-match.win'
 const MAIL_REPLY_TO = process.env.MAIL_REPLY_TO ?? 'hello@uni-hitch-match.win'
 const SITE_URL = process.env.SITE_URL ?? 'https://uni-hitch-match.win'
 

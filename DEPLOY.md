@@ -14,7 +14,7 @@ Vercel static site (this repo)
 Vercel serverless function (api/send-interest.ts)
    │   uses RESEND_API_KEY
    ▼
-Resend (sends mail FROM notifications@mail.uni-hitch-match.win)
+Resend (sends mail FROM notifications@uni-hitch-match.win)
    │
    ▼
 Ride owner's inbox
@@ -26,13 +26,13 @@ Zoho Mail (you read replies here)
 - **Domain**: `uni-hitch-match.win` (registered at Cloudflare)
 - **Registrar / DNS**: Cloudflare
 - **Web host**: Vercel
-- **Outbound mail**: Resend, from subdomain `mail.uni-hitch-match.win`
+- **Outbound mail**: Resend, **same apex domain** `uni-hitch-match.win` (Resend free tier = **1 verified domain**; a separate `mail.` subdomain counts as a second domain)
 - **Inbound mail**: Zoho Mail, on apex `uni-hitch-match.win`
 - **Brand shown in emails**: `Uni Hitch Match`
-- **Sender address**: `notifications@mail.uni-hitch-match.win`
+- **Sender address**: `notifications@uni-hitch-match.win` (no mailbox required; Resend sends it once DNS passes)
 - **Reply-to**: `hello@uni-hitch-match.win`
 
-The split (sending on `mail.`, inbox on apex) is intentional. It keeps the inbox's reputation independent of Resend and is the setup major senders use.
+**SPF on `@`:** You can only have **one** SPF TXT record on the root domain. It must **include both** Zoho (for mail you send from Zoho) and Resend’s include (usually `include:amazonses.com` — use the exact string Resend shows). Example shape: `v=spf1 include:zoho.com include:amazonses.com ~all`. **Do not** leave two separate SPF TXT records on `@`.
 
 ---
 
@@ -59,15 +59,15 @@ git push -u origin main
 
 ### Resend
 1. https://resend.com → sign up.
-2. **Domains → Add Domain**. Enter `mail.uni-hitch-match.win` (the subdomain — not the apex).
-3. Resend shows 3 DNS records (SPF TXT, DKIM TXT/CNAME, a return-path CNAME). Keep that tab open.
+2. **Domains → Add Domain**. Enter **`uni-hitch-match.win`** (the apex — fits the **1 domain** limit on the free plan). Remove any unused `mail.` domain from Resend if you hit the limit.
+3. Resend shows DNS records (SPF, DKIM, sometimes MX/CNAME for return-path). Keep that tab open.
 4. **API Keys → Create API Key**. Name it `uni-hitch-match prod`. Copy the `re_...` value once — you'll paste it into Vercel in Step 5.
 
 ### Zoho Mail (free plan)
 1. https://www.zoho.com/mail/ → sign up (Forever Free Plan, up to 5 users).
 2. **Admin Console → Domains → Add Domain** → `uni-hitch-match.win`.
 3. Zoho asks you to verify via a TXT record and then provides MX + DKIM records. Keep that tab open.
-4. Create the mailbox `hello@uni-hitch-match.win`. Optionally add `notifications@uni-hitch-match.win` too — harmless alias, but the app sends from the `mail.` subdomain so Zoho doesn't actually need to handle that address.
+4. Create the mailbox `hello@uni-hitch-match.win`. Optionally add `notifications@uni-hitch-match.win` as an **alias** in Zoho if you want a real inbox for that address; Resend can still send as `notifications@…` without Zoho hosting it.
 
 ---
 
@@ -88,19 +88,25 @@ Vercel usually gives you these two. Use the **exact values shown in Vercel** —
 
 > If Vercel shows different values on your domain page, **use Vercel's values**, not these. Vercel is the source of truth for its own records.
 
-### 4b. Resend (outbound mail on `mail.uni-hitch-match.win`)
+### 4b. Resend (outbound mail on apex `uni-hitch-match.win`)
 
-Resend will show you 3 records tied to the `mail` subdomain. They'll look like these (the actual token strings vary per account):
+Add every record Resend shows for **`uni-hitch-match.win`**, except **do not create a second SPF TXT on `@`** if you already added Zoho’s SPF in §4c.
 
-| Type  | Name (Cloudflare field)                         | Value (from Resend)                                    | Proxy    |
-|-------|-------------------------------------------------|--------------------------------------------------------|----------|
-| TXT   | `mail`                                          | `v=spf1 include:amazonses.com ~all`                    | —        |
-| TXT   | `resend._domainkey.mail`                        | `p=MIGfMA0GCSqG... ` (long DKIM key from Resend)       | —        |
-| MX    | `send.mail` (or similar, per Resend)            | `feedback-smtp.us-east-1.amazonses.com` pri `10`       | —        |
+**SPF (single TXT on `@`, merge Zoho + Resend):**
 
-**Copy the exact values from your Resend dashboard**; the table above is just the shape. Cloudflare's "Name" field only takes the subdomain portion (e.g. type `mail` not `mail.uni-hitch-match.win`).
+1. In Resend, note the SPF value they want (often something like `v=spf1 include:amazonses.com ~all`).
+2. In Zoho, note the include (usually `include:zoho.com`).
+3. In Cloudflare, keep **one** TXT record named `@` for SPF, for example:
 
-Once saved, hit **Verify DNS Records** in Resend. Usually ready within 2 minutes, sometimes up to an hour.
+   `v=spf1 include:zoho.com include:amazonses.com ~all`
+
+   Use Resend’s and Zoho’s **exact** include hostnames from their dashboards (don’t guess). If a provider gives `~all` and the other `-all`, prefer **`~all`** for MVP unless your DNS host docs say otherwise.
+
+**DKIM:** Resend gives a hostname like `resend._domainkey` (apex) — add it as its own TXT (or CNAME if they say so). Zoho’s DKIM uses a **different** hostname (e.g. `zmail._domainkey`) — both can coexist.
+
+**Other Resend rows** (return-path MX/CNAME on a subdomain they specify): add exactly as Resend lists; they do not replace Zoho’s MX on `@`.
+
+Once saved, hit **Verify DNS Records** in Resend. Usually ready within a few minutes, sometimes up to an hour.
 
 ### 4c. Zoho (inbound mail on apex `uni-hitch-match.win`)
 
@@ -111,7 +117,7 @@ From Zoho's domain setup page:
 | MX   | `@`  | `mx.zoho.com`                  | `10`     | primary mail server                  |
 | MX   | `@`  | `mx2.zoho.com`                 | `20`     |                                      |
 | MX   | `@`  | `mx3.zoho.com`                 | `50`     |                                      |
-| TXT  | `@`  | `v=spf1 include:zoho.com ~all` | —        | SPF for apex — **only one SPF TXT per name allowed** |
+| TXT  | `@`  | _(see §4b — merged with Resend)_ | —        | **Only one** SPF TXT on `@`; merge Zoho + Resend includes |
 | TXT  | `zmail._domainkey` (or the name Zoho gives) | `v=DKIM1; k=rsa; p=...` (from Zoho) | — | DKIM         |
 | TXT  | `@`  | `zoho-verification=zb...` (from Zoho)  | —        | one-time domain verification         |
 
@@ -132,7 +138,6 @@ Start with `p=none` (report-only) for 2 weeks, then upgrade to `p=quarantine` on
 After adding everything, run in PowerShell or any terminal:
 
 ```
-nslookup -type=TXT mail.uni-hitch-match.win
 nslookup -type=MX  uni-hitch-match.win
 nslookup -type=TXT uni-hitch-match.win
 ```
@@ -148,7 +153,7 @@ In Vercel: **Project → Settings → Environment Variables**. Add for **Product
 | Name              | Value                                        |
 |-------------------|----------------------------------------------|
 | `RESEND_API_KEY`  | `re_...` (from Resend, Step 3)               |
-| `MAIL_FROM`       | `notifications@mail.uni-hitch-match.win`     |
+| `MAIL_FROM`       | `notifications@uni-hitch-match.win`        |
 | `MAIL_REPLY_TO`   | `hello@uni-hitch-match.win`                  |
 | `SITE_URL`        | `https://uni-hitch-match.win`                |
 
@@ -161,7 +166,7 @@ After adding, click **Redeploy** (the top-right **⋯** menu on the latest deplo
 1. Open https://uni-hitch-match.win.
 2. Sign up (pick an `@illinois.edu` email you control) or pick a seeded account.
 3. Post a ride from one account, switch to another account, click **I'm interested** → fill the form → submit.
-4. Check the ride owner's inbox. You should receive a message from **Uni Hitch Match** `<notifications@mail.uni-hitch-match.win>`, subject `New ride interest: ...`.
+4. Check the ride owner's inbox. You should receive a message from **Uni Hitch Match** `<notifications@uni-hitch-match.win>`, subject `New ride interest: ...`.
 5. Hit **Reply**. It should thread to `hello@uni-hitch-match.win` → show up in Zoho.
 6. In Vercel **→ Deployments → Functions → send-interest**, you can see request logs (no body, for privacy — only the status). In Resend's dashboard → **Logs**, you see the actual sent emails.
 
@@ -170,7 +175,9 @@ After adding, click **Redeploy** (the top-right **⋯** menu on the latest deplo
 ## Troubleshooting
 
 **Emails go to spam.**
+- Using **only** `uni-hitch-match.win` in Resend (no separate `mail.` subdomain) is fine for deliverability if auth is correct. What matters is **SPF + DKIM + DMARC**, a stable **From** address on that domain (`notifications@…`), and low complaint volume.
 - Make sure DKIM passes in the received email's headers (`Authentication-Results: ... dkim=pass`).
+- Ensure the apex SPF TXT **includes both** Zoho and Resend (§4b). A wrong or duplicate SPF is a common spam/junk trigger.
 - Wait for `p=none` DMARC reports (Gmail + Outlook send these daily to `rua`) to confirm SPF + DKIM are aligned.
 - Avoid trigger words in the subject in future template edits.
 - Don't include `bcc` fanouts. We only ever send to one recipient.
