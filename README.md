@@ -42,6 +42,10 @@ npm run lint     # ESLint
 
 See **[DEPLOY.md](./DEPLOY.md)** for Vercel, custom domain (`uni-hitch-match.win`), Cloudflare DNS, Resend (outbound on the same apex domain as Zoho, with a merged SPF record), and Zoho Mail (inbound replies).
 
+## Real admin / Supabase
+
+The live site currently uses **browser `localStorage`**; the seeded admin is **not** a real global admin. To use **Supabase Auth**, `profiles.is_admin`, RLS, and the **`POST /api/admin/delete-ride`** endpoint, follow **[ADMIN-SETUP.md](./ADMIN-SETUP.md)**.
+
 Environment variables for email are documented in `.env.example`.
 
 ## Repository layout (high level)

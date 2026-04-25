@@ -6,6 +6,9 @@
   "functions": {
     "api/send-interest.ts": {
       "maxDuration": 10
+    },
+    "api/admin/delete-ride.ts": {
+      "maxDuration": 10
     }
   }
 }
