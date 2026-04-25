@@ -186,6 +186,9 @@ After adding, click **Redeploy** (the top-right **⋯** menu on the latest deplo
 - Cloudflare proxy on the SPF/DKIM records is the #1 cause — make sure they're all **DNS only** (gray cloud). TXT and MX records aren't proxyable anyway, but sometimes Cloudflare ignores the checkbox.
 - TTL: Cloudflare default is Auto (≈5 min). Allow 10–15 min.
 
+**Error says `mail.uni-hitch-match.win` is not verified (but you only verified the apex).**  
+That string always comes from your **`MAIL_FROM` value**, not from the test JSON. On Vercel, **Settings → Environment Variables** → open **`MAIL_FROM`**. If it is `notifications@mail.uni-hitch-match.win`, either **delete** the variable (the code then falls back to `notifications@uni-hitch-match.win`) or set it explicitly to **`notifications@uni-hitch-match.win`**. **Save → Redeploy** production. Until you do, every send still uses the old subdomain.
+
 **POST /api/send-interest returns 500.**
 - Check Vercel function logs. Most common: `RESEND_API_KEY` missing → response will be `{ ok: true, mode: "dry-run" }`, not a 500. A 500 usually means the API key is invalid.
 
