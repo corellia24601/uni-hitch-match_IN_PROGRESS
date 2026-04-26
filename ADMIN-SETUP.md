@@ -26,19 +26,17 @@ This repo already includes SQL in `supabase/migrations/`. Below is the order to 
 
 ## Phase 2 — Run SQL migrations
 
-In the Supabase dashboard: **SQL Editor**.
+In the Supabase dashboard: **SQL → New query**, paste **the entire file**, then click **Run** (runs the whole script).
 
-1. Paste and run the full contents of  
-   `supabase/migrations/20260421_full_expansion.sql`  
-   (creates tables, RLS, indexes).
-2. Run  
-   `supabase/migrations/20260425_auth_profile_bootstrap.sql`  
-   (creates `handle_new_user` so every new auth user gets a `profiles` row; **only `@illinois.edu`** emails are allowed).
-3. Run  
-   `supabase/migrations/20260425_admin_moderation_rls.sql`  
-   (admins may **update/delete any ride** and **read all notification_events**).
+1. **`20260421_full_expansion.sql`** — tables, indexes, RLS policies.  
+   - If **`create extension pgcrypto`** fails: open **Database → Extensions**, enable **pgcrypto**, then run the script again (or delete that first line if the extension is already on).  
+   - The script is **idempotent** (enums use `DO` blocks; policies are dropped before recreate).  
+   - **`messages`** uses column **`body`**, not **`text`**, to avoid parser issues in the SQL Editor.  
+   - If you already created `messages` with a column named `text`, run **`20260427_messages_column_rename_if_needed.sql`** once, then continue.
+2. **`20260425_auth_profile_bootstrap.sql`** — `handle_new_user` ( **`@illinois.edu` only** ).
+3. **`20260425_admin_moderation_rls.sql`** — admin ride delete/update + read all notifications.
 
-If a statement errors because something already exists, read the message: you may need to adjust or skip that block.
+If anything fails, copy the **full error text** from Supabase (it usually includes the line). Common fixes: enable **pgcrypto**, or run migrations **in order** on a **new empty project**.
 
 ---
 
